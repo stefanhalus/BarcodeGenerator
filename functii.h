@@ -1,3 +1,12 @@
+//
+//  functii.h
+//  BarcodeGenerator
+//
+//  ©ywesee GmbH -- all rights reserved
+//  License GPLv3.0 -- see License File
+//  Modified by Alex Bettarini on 7 Feb 2019
+//
+
 /**
  * Created on: 3 dec. 2016
  * @author: Stefan Halus
@@ -12,15 +21,14 @@
 #include <cstring>
 
 #include <fstream>
-using namespace std;
 
 void barsInitialize(int b[]);
-string numberFullFill(char[]);
-int numberControlDigit(string);
+std::string numberFullFill(const char[], const char[]);
+int numberControlDigit(std::string);
 void G(int, int[], int);
 void L(int, int[], int);
 void R(int, int[], int);
-void barCodeDrawer(string, int[]);
+void barCodeDrawer(std::string, int[]);
 
 #endif
 /* FUNCTII_H_ */
