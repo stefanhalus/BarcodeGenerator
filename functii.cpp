@@ -18,6 +18,8 @@
 
 #include "functii.h"
 
+#define N_LINES     95
+
 namespace EAN13
 {
 /**
@@ -131,6 +133,7 @@ void G(const int valoare,
 		break;
 	}
 }
+
 /**
  * @author: Stefan Halus
  * @version: 1.0
@@ -232,9 +235,9 @@ void R(const int valoare,
 std::string createSvg(const std::string &productName,
                       const std::string &productCode)
 {
-    static int b[95];   // vertical lines in the image
+    static int b[N_LINES];   // vertical lines in the image
 
-    for (int i = 0; i < 96; i++)
+    for (int i = 0; i < N_LINES; i++)
         b[i] = 0;
 
     b[0] = b[2] = 1;
@@ -264,7 +267,7 @@ std::string createSvg(const std::string &productName,
 			<< productName << "</text>" << std::endl;
 
     int pozx = 10, y2;
-	for (int i = 0; i < 95; i++) {
+	for (int i = 0; i < N_LINES; i++) {
 		if (b[i] == 1) {
 			if (i == 0 || i == 2 || i == 46 || i == 48 || i == 92 || i == 94) {
 				y2 = 65;
