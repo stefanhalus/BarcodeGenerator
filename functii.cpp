@@ -291,7 +291,7 @@ std::string createSvg(const std::string &productName,
 			<< productCode[8] << productCode[9] << productCode[10] << productCode[11]
 			<< productCode[12] << "</text>" << std::endl;
 
-    cod << "</svg>" << std::endl;
+    cod << "</svg>";
 
     return cod.str();
 }
