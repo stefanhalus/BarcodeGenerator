@@ -13,52 +13,66 @@
  * @version: 1.0
  */
 
+#include <string>
 #include <fstream>
+#include <vector>
 
 #include "functii.h"
 
-int b[95];
-std::string productName("unnamed");
-std::string productCode;
+#define SAMPLE_HTML_FILENAME  "cod.html"
 
-void createSampleHtmlPage(const std::string &svg)
+int b[95];
+
+void createSampleHtmlPage(const std::vector<std::string> &svgVector)
 {
     std::fstream cod;
     
-    cod.open("cod.html", std::ios::out);
+    cod.open(SAMPLE_HTML_FILENAME, std::ios::out);
     cod << "<!DOCTYPE html>" << std::endl;
     cod << "<html><body><center>" << std::endl;
     
-    cod << svg;
+    for (auto svg : svgVector)
+        cod << "\n<p>" << svg;
     
     cod << "</center></body></html>" << std::endl;
     cod.close();
-    
-    std::cout << std::endl << std::endl
-    << productName << ", cod " << productCode
-    << " was generated and saved." << std::endl;
 }
 
 int main(int argc, char ** argv)
 {
-	barsInitialize(b);
+    std::string productName;
+    std::string productCode;
+    std::vector<std::string> svgVector;
 
-    std::cout << "Enter product name: ";
+    EAN13::barsInitialize(b);
+
+    std::cout << "Enter product name (can be empty): ";
     getline(std::cin, productName);
 
-    std::cout << "Country code (3 digits): ";
-    char countryCode[4];
+    std::cout << "Enter country code (3 digits): ";
+    std::string countryCode;
     std::cin >> countryCode;
+    if (countryCode.size() != 3)
+        return EXIT_FAILURE;
 
-    std::cout << "Code EAN (9 digits, no spaces): ";
-    char codDat[10];
+    std::cout << "Enter EAN code (9 digits, no spaces): ";
+    std::string codDat;
     std::cin >> codDat;
+    if (codDat.size() != 9)
+        return EXIT_FAILURE;
 
-    std::string codFinal = numberFullFill(countryCode, codDat);
+    std::string codFinal = EAN13::numberFullFill(countryCode.c_str(), codDat.c_str());
     productCode = codFinal;
     
-    std::string svg = createSvg(codFinal, b);
-    createSampleHtmlPage(svg);
+    std::string svg = EAN13::createSvg(productName, productCode, codFinal, b);
+    svgVector.push_back(svg);
+    svgVector.push_back(svg);   // show it multiple times for demonstration purposes
+    svgVector.push_back(svg);
+    createSampleHtmlPage(svgVector);
+    
+    std::cout
+    << productName << " EAN13 code " << productCode
+    << " was generated and saved to file " << SAMPLE_HTML_FILENAME << std::endl;
 
 	return EXIT_SUCCESS;
 }

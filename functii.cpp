@@ -18,8 +18,8 @@
 
 #include "functii.h"
 
-extern std::string productName;
-extern std::string productCode;
+namespace EAN13
+{
 
 /**
  * @author: Stefan Halus
@@ -235,7 +235,10 @@ void R(int valoare, int b[], int poz)
  * @param nean13 represents the final bar code, including the amount of control
  * @param b[] Matrix with bits corresponding to the bar code
  */
-std::string createSvg(const std::string nean13, int b[])
+std::string createSvg(const std::string &productName,
+                      const std::string &productCode,
+                      const std::string nean13,
+                      int b[])
 {
 	std::ostringstream cod;
 
@@ -287,3 +290,4 @@ std::string createSvg(const std::string nean13, int b[])
     return cod.str();
 }
 
+}
