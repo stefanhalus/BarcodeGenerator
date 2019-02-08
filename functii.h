@@ -22,18 +22,15 @@
 
 namespace EAN13
 {
+    std::string numberFullFill(const char[], const char[]);
+    int calculateChecksum(const std::string);
 
-void barsInitialize(int b[]);
-std::string numberFullFill(const char[], const char[]);
-int numberControlDigit(std::string);
-void G(int, int[], int);
-void L(int, int[], int);
-void R(int, int[], int);
+    void G(const int, int[], const int);
+    void L(const int, int[], const int);
+    void R(const int, int[], const int);
 
-std::string createSvg(const std::string &,
-                      const std::string &,
-                      const std::string,
-                      int[]);
+    std::string createSvg(const std::string &,
+                          const std::string &);
 }
 
 #endif

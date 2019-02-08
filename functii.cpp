@@ -20,19 +20,6 @@
 
 namespace EAN13
 {
-
-/**
- * @author: Stefan Halus
- * @version: 1.0
- * @return Initializes all bits in the bar code matrix to 0.
- * @param b[] Loads the global variable
- */
-void barsInitialize(int b[]) {
-	for (int i = 0; i < 96; i++) {
-		b[i] = 0;
-	}
-}
-
 /**
  * @author: Stefan Halus
  * @version: 1.0
@@ -48,10 +35,10 @@ std::string numberFullFill(const char countryCode[], const char codDat[])
 	while (codDat[i] >= '0' && codDat[i] <= '9')
 		i++;
 
-    if (i != n) {
+    if (i != n)
 		std::cerr << "Error code: " << codDat << std::endl;
-	}
 
+    // Patch missing digits with 7. Why ?
     if (n < 9) {
 		int j;
 		for (j = 0; j < 9 - n; j++)
@@ -65,28 +52,30 @@ std::string numberFullFill(const char countryCode[], const char codDat[])
 	strcat(ean13, sirSapte);
 	strcat(ean13, codDat);
 
-    int checkSum = numberControlDigit(ean13);
+    int checkSum = calculateChecksum(ean13);
 	ean13[12] = checkSum + '0';
-	numberControlDigit(ean13);
-	return ean13;
+
+    return ean13;
 }
 
 /**
  * @author: Stefan Halus
  * @version: 1.0
- * @return Generează suma de control a codului EAN13
- * @param  ean12 este valoarea string a codului introdus
+ * @return Generates the EAN13 checksum digit
+ * @param  ean12 is the string value of the code entered
  */
-int numberControlDigit(std::string ean13)
+int calculateChecksum(const std::string ean13)
 {
-	int nean13[13], s1 = 0, s2 = 0, S = 0, checkSum = 0;
+    int nean13[13];
+    int s1 = 0, s2 = 0, S = 0;
+    int checkSum = 0;
 
     for (int j = 0; j < 12; j++)
 		nean13[j] = ean13[j] - '0';
 
     for (int i = 0; i < 12; i = i + 2) {
-		s1 = s1 + nean13[i];
-		s2 = s2 + nean13[i + 1];
+		s1 += nean13[i];
+		s2 += nean13[i + 1];
 	}
 
     S = s1 + 3 * s2;
@@ -100,12 +89,14 @@ int numberControlDigit(std::string ean13)
 /**
  * @author: Stefan Halus
  * @version: 1.0
- * @return Generează șirul de biți necesar pentru codul de bare, grupa G
- * @param valoare este valoarea sau cifra de convertit
- * @param b[] matricea cu biții scriși
- * @param poz bitul de start de la care se face atribuirea
+ * @return Generates bit string required for bar code, group G
+ * @param valoare is the value or figure to convert
+ * @param b[] Matrix with written bits
+ * @param poz The starting bit of the attribution
  */
-void G(int valoare, int b[], int poz)
+void G(const int valoare,
+       int b[],
+       const int poz)
 {
 	switch ((valoare - '0')) {
 	case 0: // 0100111
@@ -148,7 +139,9 @@ void G(int valoare, int b[], int poz)
  * @param b[] Matrix with written bits
  * @param poz The starting bit of the attribution
  */
-void L(int valoare, int b[], int poz)
+void L(const int valoare,
+       int b[],
+       const int poz)
 {
 	switch ((valoare - '0')) {
 	case 0: // 0001101
@@ -192,7 +185,9 @@ void L(int valoare, int b[], int poz)
  * @param b[] matricea cu biții scriși
  * @param poz bitul de start de la care se face atribuirea
  */
-void R(int valoare, int b[], int poz)
+void R(const int valoare,
+       int b[],
+       const int poz)
 {
 	switch ((valoare - '0')) {
 	case 0: //		1110010
@@ -233,33 +228,39 @@ void R(int valoare, int b[], int poz)
  * @version: 1.0
  * @return Generates HTML + SVG code that represents the barcode and related explanatory texts
  * @param nean13 represents the final bar code, including the amount of control
- * @param b[] Matrix with bits corresponding to the bar code
  */
 std::string createSvg(const std::string &productName,
-                      const std::string &productCode,
-                      const std::string nean13,
-                      int b[])
+                      const std::string &productCode)
 {
-	std::ostringstream cod;
+    static int b[95];   // vertical lines in the image
+
+    for (int i = 0; i < 96; i++)
+        b[i] = 0;
 
     b[0] = b[2] = 1;
 	b[1] = 0;
-	L(nean13[1], b, 3);
-	G(nean13[2], b, 10);
-	G(nean13[3], b, 17);
-	L(nean13[4], b, 24);
-	L(nean13[5], b, 31);
-	G(nean13[6], b, 38);
-	b[45] = b[47] = b[49] = 0;
+
+    L(productCode[1], b, 3);    // each digit is seven lines apart
+	G(productCode[2], b, 10);
+	G(productCode[3], b, 17);
+	L(productCode[4], b, 24);
+	L(productCode[5], b, 31);
+	G(productCode[6], b, 38);
+
+    b[45] = b[47] = b[49] = 0;
 	b[46] = b[48] = 1;
-	for (int i = 0; i < 6; i++)
-		R(nean13[7 + i], b, 50 + i * 7);
+
+    for (int i = 0; i < 6; i++)
+		R(productCode[7 + i], b, 50 + i * 7);
 
     b[92] = b[94] = 1;
 	b[93] = 0;
 
+    std::ostringstream cod;
 	cod << "<svg height=\"70\" width=\"200\">" << std::endl;
-	cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
+    
+    if (!productName.empty())
+        cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
 			<< productName << "</text>" << std::endl;
 
     int pozx = 10, y2;
@@ -275,9 +276,10 @@ std::string createSvg(const std::string &productName,
 					<< "\" style=\"stroke:rgb(0,0,0); stroke-width:2\" />"
 					<< std::endl;
 		}
-		pozx = pozx + 2;
+		pozx += 2;
 	}
 
+    // Show numeric value of code under the bars
     cod << "<text x=\"-1\" y=\"64\">" << productCode[0] << "</text>" << std::endl;
 	cod << "<text x=\"21\" y=\"64\" letter-spacing=\"5\">" << productCode[1]
 			<< productCode[2] << productCode[3] << productCode[4] << productCode[5]
@@ -285,7 +287,8 @@ std::string createSvg(const std::string &productName,
 	cod << "<text x=\"113\" y=\"64\" letter-spacing=\"5\">" << productCode[7]
 			<< productCode[8] << productCode[9] << productCode[10] << productCode[11]
 			<< productCode[12] << "</text>" << std::endl;
-	cod << "</svg>" << std::endl;
+
+    cod << "</svg>" << std::endl;
 
     return cod.str();
 }

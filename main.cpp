@@ -21,8 +21,6 @@
 
 #define SAMPLE_HTML_FILENAME  "cod.html"
 
-int b[95];
-
 void createSampleHtmlPage(const std::vector<std::string> &svgVector)
 {
     std::fstream cod;
@@ -44,8 +42,6 @@ int main(int argc, char ** argv)
     std::string productCode;
     std::vector<std::string> svgVector;
 
-    EAN13::barsInitialize(b);
-
     std::cout << "Enter product name (can be empty): ";
     getline(std::cin, productName);
 
@@ -64,7 +60,7 @@ int main(int argc, char ** argv)
     std::string codFinal = EAN13::numberFullFill(countryCode.c_str(), codDat.c_str());
     productCode = codFinal;
     
-    std::string svg = EAN13::createSvg(productName, productCode, codFinal, b);
+    std::string svg = EAN13::createSvg(productName, productCode);
     svgVector.push_back(svg);
     svgVector.push_back(svg);   // show it multiple times for demonstration purposes
     svgVector.push_back(svg);
