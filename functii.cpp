@@ -26,7 +26,7 @@ namespace EAN13
  * @return Completes the 9-digit string in the code with the previous missing digits, replaced by 7
  * @param codDat[] User-entered Code
  */
-std::string numberFullFill(const char countryCode[], const char codDat[])
+std::string appendChecksum(const char countryCode[], const char codDat[])
 {
     int n = strlen(codDat);
     int i = 0;

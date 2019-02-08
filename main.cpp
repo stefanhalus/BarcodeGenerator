@@ -38,36 +38,34 @@ void createSampleHtmlPage(const std::vector<std::string> &svgVector)
 
 int main(int argc, char ** argv)
 {
-    std::string productName;
-    std::string productCode;
     std::vector<std::string> svgVector;
 
     std::cout << "Enter product name (can be empty): ";
+    std::string productName;
     getline(std::cin, productName);
 
     std::cout << "Enter country code (3 digits): ";
-    std::string countryCode;
-    std::cin >> countryCode;
-    if (countryCode.size() != 3)
+    std::string code3;
+    std::cin >> code3;
+    if (code3.size() != 3)
         return EXIT_FAILURE;
 
     std::cout << "Enter EAN code (9 digits, no spaces): ";
-    std::string codDat;
-    std::cin >> codDat;
-    if (codDat.size() != 9)
+    std::string code9;
+    std::cin >> code9;
+    if (code9.size() != 9)
         return EXIT_FAILURE;
 
-    std::string codFinal = EAN13::numberFullFill(countryCode.c_str(), codDat.c_str());
-    productCode = codFinal;
+    std::string code13 = EAN13::appendChecksum(code3.c_str(), code9.c_str());
     
-    std::string svg = EAN13::createSvg(productName, productCode);
+    std::string svg = EAN13::createSvg(productName, code13);
     svgVector.push_back(svg);
     svgVector.push_back(svg);   // show it multiple times for demonstration purposes
     svgVector.push_back(svg);
     createSampleHtmlPage(svgVector);
     
     std::cout
-    << productName << " EAN13 code " << productCode
+    << productName << " EAN13 code " << code13
     << " was generated and saved to file " << SAMPLE_HTML_FILENAME << std::endl;
 
 	return EXIT_SUCCESS;

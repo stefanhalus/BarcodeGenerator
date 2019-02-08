@@ -22,7 +22,7 @@
 
 namespace EAN13
 {
-    std::string numberFullFill(const char[], const char[]);
+    std::string appendChecksum(const char[], const char[]);
     int calculateChecksum(const std::string);
 
     void G(const int, int[], const int);
