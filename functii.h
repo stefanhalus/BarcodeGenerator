@@ -20,15 +20,14 @@
 #include <iostream>
 #include <cstring>
 
-#include <fstream>
-
 void barsInitialize(int b[]);
 std::string numberFullFill(const char[], const char[]);
 int numberControlDigit(std::string);
 void G(int, int[], int);
 void L(int, int[], int);
 void R(int, int[], int);
-void barCodeDrawer(std::string, int[]);
+
+std::string createSvg(const std::string, int[]);
 
 #endif
 /* FUNCTII_H_ */

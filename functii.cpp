@@ -14,7 +14,12 @@
  * @return Loading application Header
  */
 
+#include <sstream>
+
 #include "functii.h"
+
+extern std::string productName;
+extern std::string productCode;
 
 /**
  * @author: Stefan Halus
@@ -230,11 +235,9 @@ void R(int valoare, int b[], int poz)
  * @param nean13 represents the final bar code, including the amount of control
  * @param b[] Matrix with bits corresponding to the bar code
  */
-void barCodeDrawer(std::string nean13, int b[])
+std::string createSvg(const std::string nean13, int b[])
 {
-	std::fstream cod;
-	extern std::string productName;
-	extern std::string productCode;
+	std::ostringstream cod;
 
     b[0] = b[2] = 1;
 	b[1] = 0;
@@ -252,9 +255,6 @@ void barCodeDrawer(std::string nean13, int b[])
     b[92] = b[94] = 1;
 	b[93] = 0;
 
-    cod.open("cod.html", std::ios::out);
-	cod << "<!DOCTYPE html>" << std::endl;
-	cod << "<html><body><center>" << std::endl;
 	cod << "<svg height=\"70\" width=\"200\">" << std::endl;
 	cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
 			<< productName << "</text>" << std::endl;
@@ -283,10 +283,7 @@ void barCodeDrawer(std::string nean13, int b[])
 			<< productCode[8] << productCode[9] << productCode[10] << productCode[11]
 			<< productCode[12] << "</text>" << std::endl;
 	cod << "</svg>" << std::endl;
-	cod << "</center></body></html>" << std::endl;
-	cod.close();
 
-    std::cout << std::endl << std::endl
-            << productName << ", cod " << productCode
-			<< " was generated and saved." << std::endl;
+    return cod.str();
 }
+
