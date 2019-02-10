@@ -27,8 +27,9 @@ void createSampleHtmlPage(const std::vector<std::string> &svgVector)
     
     cod.open(SAMPLE_HTML_FILENAME, std::ios::out);
     cod << "<!DOCTYPE html>" << std::endl;
-    cod << "<html><body><center>" << std::endl;
-    
+    cod << "<html><head><meta charset=\"UTF-8\"></head>" << std::endl;
+    cod << "<body><center>" << std::endl;
+
     for (auto svg : svgVector)
         cod << "\n<p>" << svg;
     
@@ -40,33 +41,41 @@ int main(int argc, char ** argv)
 {
     std::vector<std::string> svgVector;
 
-    std::cout << "Enter product name (can be empty): ";
-    std::string productName;
-    getline(std::cin, productName);
+    while (1) {
+        std::cout << std::endl << "Enter product name (empty to terminate list): ";
+        std::string productName;
+        getline(std::cin, productName);
+        
+        if (productName.empty()) {
+            std::cout << "line " << __LINE__ << std::endl;
+            break;
+        }
+        
+        std::cout << "Enter country code (3 digits): ";
+        std::string code3;
+        std::cin >> code3;
+        if (code3.size() != 3)
+            return EXIT_FAILURE;
 
-    std::cout << "Enter country code (3 digits): ";
-    std::string code3;
-    std::cin >> code3;
-    if (code3.size() != 3)
-        return EXIT_FAILURE;
+        std::cout << "Enter EAN code (9 digits, no spaces): ";
+        std::string code9;
+        std::cin >> code9;
+        if (code9.size() != 9)
+            return EXIT_FAILURE;
 
-    std::cout << "Enter EAN code (9 digits, no spaces): ";
-    std::string code9;
-    std::cin >> code9;
-    if (code9.size() != 9)
-        return EXIT_FAILURE;
+        std::cin.clear();
+        std::cin.ignore(100, '\n');
 
-    std::string code13 = EAN13::appendChecksum(code3.c_str(), code9.c_str());
-    
-    std::string svg = EAN13::createSvg(productName, code13);
-    svgVector.push_back(svg);
-    svgVector.push_back(svg);   // show it multiple times for demonstration purposes
-    svgVector.push_back(svg);
-    createSampleHtmlPage(svgVector);
-    
-    std::cout
-    << productName << " EAN13 code " << code13
-    << " was generated and saved to file " << SAMPLE_HTML_FILENAME << std::endl;
+        std::string code13 = EAN13::appendChecksum(code3.c_str(), code9.c_str());
+        
+        std::string svg = EAN13::createSvg(productName, code13);
+        svgVector.push_back(svg);
+    }
+
+    if (svgVector.size() > 0) {
+        createSampleHtmlPage(svgVector);
+        std::cout << " Sample file generated: " << SAMPLE_HTML_FILENAME << std::endl;
+    }
 
 	return EXIT_SUCCESS;
 }
