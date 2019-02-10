@@ -18,11 +18,21 @@
 
 #include "functii.h"
 
-#define N_LINES     95
+#define N_LINES         95
+#define DIGIT_SPACING   7   // each digit is seven lines apart
+
 
 namespace EAN13
 {
-/**
+    static uint8_t b[N_LINES];   // vertical lines in the image
+
+    // To indirectly encode the first digit
+    static bool parities[10][6] = {
+        {0, 0, 0, 0, 0, 0}, {0, 0, 1, 0, 1, 1}, {0, 0, 1, 1, 0, 1}, {0, 0, 1, 1, 1, 0}, {0, 1, 0, 0, 1, 1},
+        {0, 1, 1, 0, 0, 1}, {0, 1, 1, 1, 0, 0}, {0, 1, 0, 1, 0, 1}, {0, 1, 0, 1, 1, 0}, {0, 1, 1, 0, 1, 0}
+    };
+
+    /**
  * @author: Stefan Halus
  * @version: 1.0
  * @return Completes the 9-digit string in the code with the previous missing digits, replaced by 7
@@ -68,20 +78,16 @@ std::string appendChecksum(const char countryCode[], const char codDat[])
  */
 int calculateChecksum(const std::string ean13)
 {
-    int nean13[13];
-    int s1 = 0, s2 = 0, S = 0;
-    int checkSum = 0;
-
-    for (int j = 0; j < 12; j++)
-		nean13[j] = ean13[j] - '0';
+    int evens = 0;
+    int odds = 0;
 
     for (int i = 0; i < 12; i = i + 2) {
-		s1 += nean13[i];
-		s2 += nean13[i + 1];
+		evens += ean13[i] - '0';
+		odds  += ean13[i + 1] - '0';
 	}
 
-    S = s1 + 3 * s2;
-	checkSum = 10 - S % 10;
+    int S = evens + 3 * odds;
+	int checkSum = 10 - S % 10;
     if (checkSum == 10)
         checkSum = 0;
     
@@ -89,15 +95,12 @@ int calculateChecksum(const std::string ean13)
 }
 
 /**
- * @author: Stefan Halus
- * @version: 1.0
- * @return Generates bit string required for bar code, group G
+ * Generates the bit string required for the bar code, group G (even)
  * @param valoare is the value or figure to convert
  * @param b[] Matrix with written bits
  * @param poz The starting bit of the attribution
  */
 void G(const int valoare,
-       int b[],
        const int poz)
 {
 	switch ((valoare - '0')) {
@@ -135,15 +138,12 @@ void G(const int valoare,
 }
 
 /**
- * @author: Stefan Halus
- * @version: 1.0
-  * @return Generates the bit string required for the bar code, group L
+ * Generates the bit string required for the bar code, group L (odd)
  * @param Value is the value or figure to convert
  * @param b[] Matrix with written bits
  * @param poz The starting bit of the attribution
  */
 void L(const int valoare,
-       int b[],
        const int poz)
 {
 	switch ((valoare - '0')) {
@@ -181,15 +181,12 @@ void L(const int valoare,
 }
 
 /**
- * @author: Stefan Halus
- * @version: 1.0
-  * @return Generează șirul de biți necesar pentru codul de bare, grupa R
+ * Generates the bit string required for the bar code, pattern R
  * @param valoare este valoarea sau cifra de convertit
  * @param b[] matricea cu biții scriși
  * @param poz bitul de start de la care se face atribuirea
  */
 void R(const int valoare,
-       int b[],
        const int poz)
 {
 	switch ((valoare - '0')) {
@@ -235,27 +232,29 @@ void R(const int valoare,
 std::string createSvg(const std::string &productName,
                       const std::string &productCode)
 {
-    static int b[N_LINES];   // vertical lines in the image
-
     for (int i = 0; i < N_LINES; i++)
         b[i] = 0;
 
+    // lead
     b[0] = b[2] = 1;
 	b[1] = 0;
 
-    L(productCode[1], b, 3);    // each digit is seven lines apart
-	G(productCode[2], b, 10);
-	G(productCode[3], b, 17);
-	L(productCode[4], b, 24);
-	L(productCode[5], b, 31);
-	G(productCode[6], b, 38);
+    uint8_t start = productCode[0] - '0';
 
+    for (int i = 0; i < 6; i++)
+        if (parities[start][i])
+            G(productCode[1 + i], 3 + i * DIGIT_SPACING);
+        else
+            L(productCode[1 + i], 3 + i * DIGIT_SPACING);
+
+    // separator
     b[45] = b[47] = b[49] = 0;
 	b[46] = b[48] = 1;
 
     for (int i = 0; i < 6; i++)
-		R(productCode[7 + i], b, 50 + i * 7);
+		R(productCode[7 + i], 50 + i * DIGIT_SPACING);
 
+    // trail
     b[92] = b[94] = 1;
 	b[93] = 0;
 

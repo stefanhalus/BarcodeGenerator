@@ -25,10 +25,6 @@ namespace EAN13
     std::string appendChecksum(const char[], const char[]);
     int calculateChecksum(const std::string);
 
-    void G(const int, int[], const int);
-    void L(const int, int[], const int);
-    void R(const int, int[], const int);
-
     std::string createSvg(const std::string &,
                           const std::string &);
 }

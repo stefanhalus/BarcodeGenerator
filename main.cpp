@@ -19,7 +19,7 @@
 
 #include "functii.h"
 
-#define SAMPLE_HTML_FILENAME  "cod.html"
+#define SAMPLE_HTML_FILENAME  "sample.html"
 
 void createSampleHtmlPage(const std::vector<std::string> &svgVector)
 {
