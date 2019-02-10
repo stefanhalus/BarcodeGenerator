@@ -259,11 +259,13 @@ std::string createSvg(const std::string &productName,
 	b[93] = 0;
 
     std::ostringstream cod;
-	cod << "<svg height=\"70\" width=\"200\">" << std::endl;
-    
+    cod << "<svg height=\"70\" width=\"200\">" << std::endl;
+
     if (!productName.empty())
         cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
 			<< productName << "</text>" << std::endl;
+
+    cod << "<g style=\"stroke:black; stroke-width:2\">" << std::endl;
 
     int pozx = 10, y2;
 	for (int i = 0; i < N_LINES; i++) {
@@ -274,12 +276,14 @@ std::string createSvg(const std::string &productName,
 				y2 = 50;
 			}
 			cod << "<line x1=\"" << pozx << "\" y1=\"20\" x2=\"" << pozx
-					<< "\" y2=\"" << y2
-					<< "\" style=\"stroke:rgb(0,0,0); stroke-width:2\" />"
+					<< "\" y2=\"" << y2 << "\""
+                    << " />"
 					<< std::endl;
 		}
 		pozx += 2;
 	}
+
+    cod << "</g>" << std::endl;
 
     // Show numeric value of code under the bars
     cod << "<text x=\"-1\" y=\"64\">" << productCode[0] << "</text>" << std::endl;
