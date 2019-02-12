@@ -18,8 +18,16 @@
 
 #include "functii.h"
 
-#define N_LINES         95
-#define DIGIT_SPACING   7   // each digit is seven lines apart
+#define N_LINES                 95
+#define DIGIT_SPACING           7   // each digit is seven lines apart
+
+#define SVG_HEIGHT              70
+#define SVG_WIDTH               200
+
+#define LINE_Y_TOP              20
+#define LINE_Y_BOT_LINES_SHORT  50
+#define LINE_Y_BOT_LINES_LONG   65
+#define LINE_WIDTH              2
 
 
 namespace EAN13
@@ -259,7 +267,7 @@ std::string createSvg(const std::string &productName,
 	b[93] = 0;
 
     std::ostringstream cod;
-    cod << "<svg height=\"70\" width=\"200\">" << std::endl;
+    cod << "<svg height=\"" << SVG_HEIGHT << "\" width=\"" << SVG_WIDTH << "\">" << std::endl;
 
     if (!productName.empty())
         cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
@@ -271,28 +279,25 @@ std::string createSvg(const std::string &productName,
 	for (int i = 0; i < N_LINES; i++) {
 		if (b[i] == 1) {
 			if (i == 0 || i == 2 || i == 46 || i == 48 || i == 92 || i == 94) {
-				y2 = 65;
-			} else {
-				y2 = 50;
+				y2 = LINE_Y_BOT_LINES_LONG;
 			}
-			cod << "<line x1=\"" << pozx << "\" y1=\"20\" x2=\"" << pozx
+            else {
+				y2 = LINE_Y_BOT_LINES_SHORT;
+			}
+			cod << "<line x1=\"" << pozx << "\" y1=\"" << LINE_Y_TOP << "\" x2=\"" << pozx
 					<< "\" y2=\"" << y2 << "\""
                     << " />"
 					<< std::endl;
 		}
-		pozx += 2;
+		pozx += LINE_WIDTH;
 	}
 
     cod << "</g>" << std::endl;
 
     // Show numeric value of code under the bars
-    cod << "<text x=\"-1\" y=\"64\">" << productCode[0] << "</text>" << std::endl;
-	cod << "<text x=\"21\" y=\"64\" letter-spacing=\"5\">" << productCode[1]
-			<< productCode[2] << productCode[3] << productCode[4] << productCode[5]
-			<< productCode[6] << "</text>" << std::endl;
-	cod << "<text x=\"113\" y=\"64\" letter-spacing=\"5\">" << productCode[7]
-			<< productCode[8] << productCode[9] << productCode[10] << productCode[11]
-			<< productCode[12] << "</text>" << std::endl;
+    cod << "<text x=\"0\" y=\"64\">" << productCode[0] << "</text>" << std::endl;
+	cod << "<text x=\"21\" y=\"64\" letter-spacing=\"5\">" << productCode.substr(1,6) << "</text>" << std::endl;
+	cod << "<text x=\"113\" y=\"64\" letter-spacing=\"5\">" << productCode.substr(7,6) << "</text>" << std::endl;
 
     cod << "</svg>";
 
