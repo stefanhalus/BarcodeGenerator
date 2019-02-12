@@ -18,17 +18,26 @@
 
 #include "functii.h"
 
-#define N_LINES                 95
-#define DIGIT_SPACING           7   // each digit is seven lines apart
+// In EAN13 only the last 12 digits are "directly" encoded.
+// In EAN13 the first digit is encoded "indirectly" via the parity of group 1
+#define N_EAN_DIGITS            12  // 8 for EAN8
 
-#define SVG_HEIGHT              70
-#define SVG_WIDTH               200
+#define EAN_GROUP_1_DIGITS      6   // 4 for EAN8
+#define EAN_GROUP_2_DIGITS      6   // 4 for EAN8
 
-#define LINE_Y_TOP              20
+#define LINES_PER_DIGIT         7       // each digit is seven lines apart
+#define LINES_SEPARATORS        (3+5+3) // lead middle trail
+#define N_LINES                 (N_EAN_DIGITS * LINES_PER_DIGIT + LINES_SEPARATORS)
+
+// SVG rendering constants
+#define QUIET_ZONE_WIDTH        5  // should be 9
+#define LINES_Y_TOP             20
 #define LINE_Y_BOT_LINES_SHORT  50
 #define LINE_Y_BOT_LINES_LONG   65
-#define LINE_WIDTH              2
-
+#define SVG_LINE_WIDTH          2
+#define SVG_HEIGHT              70
+#define SVG_QUIET_ZONE_WIDTH    (QUIET_ZONE_WIDTH * SVG_LINE_WIDTH)
+#define SVG_WIDTH               (N_LINES*SVG_LINE_WIDTH + SVG_QUIET_ZONE_WIDTH)
 
 namespace EAN13
 {
@@ -40,7 +49,7 @@ namespace EAN13
         {0, 1, 1, 0, 0, 1}, {0, 1, 1, 1, 0, 0}, {0, 1, 0, 1, 0, 1}, {0, 1, 0, 1, 1, 0}, {0, 1, 1, 0, 1, 0}
     };
 
-    /**
+/**
  * @author: Stefan Halus
  * @version: 1.0
  * @return Completes the 9-digit string in the code with the previous missing digits, replaced by 7
@@ -109,7 +118,7 @@ int calculateChecksum(const std::string ean13)
  * @param poz The starting bit of the attribution
  */
 void G(const int valoare,
-       const int poz)
+       int &poz)
 {
 	switch ((valoare - '0')) {
 	case 0: // 0100111
@@ -118,31 +127,33 @@ void G(const int valoare,
 	case 1: // 0110011
 		b[poz + 1] = b[poz + 2] = b[poz + 5] = b[poz + 6] = 1;
 		break;
-	case 2: //0011011
+	case 2: // 0011011
 		b[poz + 2] = b[poz + 3] = b[poz + 5] = b[poz + 6] = 1;
 		break;
-	case 3: //0100001
+	case 3: // 0100001
 		b[poz + 1] = b[poz + 6] = 1;
 		break;
-	case 4: //0011101
+	case 4: // 0011101
 		b[poz + 2] = b[poz + 3] = b[poz + 4] = b[poz + 6] = 1;
 		break;
 	case 5: // 0111001
 		b[poz + 1] = b[poz + 2] = b[poz + 3] = b[poz + 6] = 1;
 		break;
-	case 6: //0000101
+	case 6: // 0000101
 		b[poz + 4] = b[poz + 6] = 1;
 		break;
-	case 7: //  0010001
+	case 7: // 0010001
 		b[poz + 2] = b[poz + 6] = 1;
 		break;
-	case 8: //  0001001
+	case 8: // 0001001
 		b[poz + 3] = b[poz + 6] = 1;
 		break;
 	case 9: // 0010111
 		b[poz + 2] = b[poz + 4] = b[poz + 5] = b[poz + 6] = 1;
 		break;
 	}
+    
+    poz += LINES_PER_DIGIT;
 }
 
 /**
@@ -152,7 +163,7 @@ void G(const int valoare,
  * @param poz The starting bit of the attribution
  */
 void L(const int valoare,
-       const int poz)
+       int &poz)
 {
 	switch ((valoare - '0')) {
 	case 0: // 0001101
@@ -186,6 +197,8 @@ void L(const int valoare,
 		b[poz + 3] = b[poz + 5] = b[poz + 6] = 1;
 		break;
 	}
+    
+    poz += LINES_PER_DIGIT;
 }
 
 /**
@@ -195,7 +208,7 @@ void L(const int valoare,
  * @param poz bitul de start de la care se face atribuirea
  */
 void R(const int valoare,
-       const int poz)
+       int &poz)
 {
 	switch ((valoare - '0')) {
 	case 0: //		1110010
@@ -229,6 +242,8 @@ void R(const int valoare,
 		b[poz] = b[poz + 1] = b[poz + 2] = b[poz + 4] = 1;
 		break;
 	}
+
+    poz += LINES_PER_DIGIT;
 }
 
 /**
@@ -243,28 +258,34 @@ std::string createSvg(const std::string &productName,
     for (int i = 0; i < N_LINES; i++)
         b[i] = 0;
 
-    // lead
-    b[0] = b[2] = 1;
-	b[1] = 0;
-
     uint8_t start = productCode[0] - '0';
+    int idx = 0; // line index for b[]
 
-    for (int i = 0; i < 6; i++)
+    // lead
+    b[idx++] = 1;
+	b[idx++] = 0;
+    b[idx++] = 1;
+
+    for (int i = 0; i < EAN_GROUP_1_DIGITS; i++)
         if (parities[start][i])
-            G(productCode[1 + i], 3 + i * DIGIT_SPACING);
+            G(productCode[1 + i], idx);
         else
-            L(productCode[1 + i], 3 + i * DIGIT_SPACING);
+            L(productCode[1 + i], idx);
 
     // separator
-    b[45] = b[47] = b[49] = 0;
-	b[46] = b[48] = 1;
+    b[idx++] = 0;
+    b[idx++] = 1;
+    b[idx++] = 0;
+    b[idx++] = 1;
+    b[idx++] = 0;
 
-    for (int i = 0; i < 6; i++)
-		R(productCode[7 + i], 50 + i * DIGIT_SPACING);
+    for (int i = 0; i < EAN_GROUP_2_DIGITS; i++)
+		R(productCode[7 + i], idx);
 
     // trail
-    b[92] = b[94] = 1;
-	b[93] = 0;
+    b[idx++] = 1;
+    b[idx++] = 0;
+    b[idx++] = 1;
 
     std::ostringstream cod;
     cod << "<svg height=\"" << SVG_HEIGHT << "\" width=\"" << SVG_WIDTH << "\">" << std::endl;
@@ -272,10 +293,10 @@ std::string createSvg(const std::string &productName,
     if (!productName.empty())
         cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
 			<< productName << "</text>" << std::endl;
+    
+    cod << "<g style=\"stroke:black; stroke-width:" << SVG_LINE_WIDTH << "\">" << std::endl;
 
-    cod << "<g style=\"stroke:black; stroke-width:2\">" << std::endl;
-
-    int pozx = 10, y2;
+    int pozx = SVG_QUIET_ZONE_WIDTH, y2;
 	for (int i = 0; i < N_LINES; i++) {
 		if (b[i] == 1) {
 			if (i == 0 || i == 2 || i == 46 || i == 48 || i == 92 || i == 94) {
@@ -284,12 +305,14 @@ std::string createSvg(const std::string &productName,
             else {
 				y2 = LINE_Y_BOT_LINES_SHORT;
 			}
-			cod << "<line x1=\"" << pozx << "\" y1=\"" << LINE_Y_TOP << "\" x2=\"" << pozx
-					<< "\" y2=\"" << y2 << "\""
-                    << " />"
-					<< std::endl;
+
+            cod << "<line x1=\"" << pozx
+                << "\" y1=\"" << LINES_Y_TOP
+                << "\" x2=\"" << pozx
+                << "\" y2=\"" << y2 << "\" />" << std::endl;
 		}
-		pozx += LINE_WIDTH;
+        
+		pozx += SVG_LINE_WIDTH;
 	}
 
     cod << "</g>" << std::endl;
@@ -301,6 +324,8 @@ std::string createSvg(const std::string &productName,
 
     cod << "</svg>";
 
+    std::cout << "N_LINES " << N_LINES << std::endl;
+    std::cout << "SVG_WIDTH " << SVG_WIDTH << std::endl;
     return cod.str();
 }
 
