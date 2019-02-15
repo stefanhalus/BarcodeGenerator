@@ -31,11 +31,13 @@
 
 // SVG rendering constants
 #define QUIET_ZONE_WIDTH        5  // should be 9
-#define LINES_Y_TOP             20
-#define LINE_Y_BOT_LINES_SHORT  50
-#define LINE_Y_BOT_LINES_LONG   65
+#define LABEL_HEIGHT            20
+#define LINES_Y_TOP             0
+#define LINE_Y_BOT_LINES_SHORT  30
+#define LINE_Y_BOT_LINES_LONG   45
+#define CODE_Y                  44
 #define SVG_LINE_WIDTH          2
-#define SVG_HEIGHT              70
+#define SVG_HEIGHT              50
 #define SVG_QUIET_ZONE_WIDTH    (QUIET_ZONE_WIDTH * SVG_LINE_WIDTH)
 #define SVG_WIDTH               (N_LINES*SVG_LINE_WIDTH + SVG_QUIET_ZONE_WIDTH)
 
@@ -255,6 +257,20 @@ void R(const int valoare,
 std::string createSvg(const std::string &productName,
                       const std::string &productCode)
 {
+    int linesTop = LINES_Y_TOP;
+    int lineBotShort = LINE_Y_BOT_LINES_SHORT;
+    int lineBotLong = LINE_Y_BOT_LINES_LONG;
+    int svgHeight = SVG_HEIGHT;
+    int codeY = CODE_Y;
+    
+    if (!productName.empty()) {
+        linesTop += LABEL_HEIGHT;
+        lineBotShort += LABEL_HEIGHT;
+        lineBotLong += LABEL_HEIGHT;
+        svgHeight += LABEL_HEIGHT;
+        codeY += LABEL_HEIGHT;
+    }
+
     for (int i = 0; i < N_LINES; i++)
         b[i] = 0;
 
@@ -288,12 +304,13 @@ std::string createSvg(const std::string &productName,
     b[idx++] = 1;
 
     std::ostringstream cod;
-    cod << "<svg height=\"" << SVG_HEIGHT << "\" width=\"" << SVG_WIDTH << "\">" << std::endl;
+    cod << "<svg height=\"" << svgHeight << "\" width=\"" << SVG_WIDTH << "\">" << std::endl;
     cod << "<rect height=\"100%\" width=\"100%\" fill=\"white\" />" << std::endl;
 
-    if (!productName.empty())
+    if (!productName.empty()) {
         cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
 			<< productName << "</text>" << std::endl;
+    }
     
     cod << "<g style=\"stroke:black; stroke-width:" << SVG_LINE_WIDTH << "\">" << std::endl;
 
@@ -301,14 +318,14 @@ std::string createSvg(const std::string &productName,
 	for (int i = 0; i < N_LINES; i++) {
 		if (b[i] == 1) {
 			if (i == 0 || i == 2 || i == 46 || i == 48 || i == 92 || i == 94) {
-				y2 = LINE_Y_BOT_LINES_LONG;
+				y2 = lineBotLong;
 			}
             else {
-				y2 = LINE_Y_BOT_LINES_SHORT;
+				y2 = lineBotShort;
 			}
 
             cod << "<line x1=\"" << pozx
-                << "\" y1=\"" << LINES_Y_TOP
+                << "\" y1=\"" << linesTop
                 << "\" x2=\"" << pozx
                 << "\" y2=\"" << y2 << "\" />" << std::endl;
 		}
@@ -319,9 +336,9 @@ std::string createSvg(const std::string &productName,
     cod << "</g>" << std::endl;
 
     // Show numeric value of code under the bars
-    cod << "<text x=\"0\" y=\"64\">" << productCode[0] << "</text>" << std::endl;
-	cod << "<text x=\"21\" y=\"64\" letter-spacing=\"5\">" << productCode.substr(1,6) << "</text>" << std::endl;
-	cod << "<text x=\"113\" y=\"64\" letter-spacing=\"5\">" << productCode.substr(7,6) << "</text>" << std::endl;
+    cod << "<text x=\"0\" y=\"" << codeY << "\">" << productCode[0] << "</text>" << std::endl;
+	cod << "<text x=\"21\" y=\"" << codeY << "\" letter-spacing=\"5\">" << productCode.substr(1,6) << "</text>" << std::endl;
+	cod << "<text x=\"113\" y=\"" << codeY << "\" letter-spacing=\"5\">" << productCode.substr(7,6) << "</text>" << std::endl;
 
     cod << "</svg>";
 

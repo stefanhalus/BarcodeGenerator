@@ -50,7 +50,10 @@ int main(int argc, char ** argv)
             std::cout << "line " << __LINE__ << std::endl;
             break;
         }
-        
+
+        if (productName == ";") // use ';' to have a barcode without label
+            productName.clear();
+
         std::cout << "Enter country code (3 digits): ";
         std::string code3;
         std::cin >> code3;
