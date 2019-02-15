@@ -342,8 +342,6 @@ std::string createSvg(const std::string &productName,
 
     cod << "</svg>";
 
-    std::cout << "N_LINES " << N_LINES << std::endl;
-    std::cout << "SVG_WIDTH " << SVG_WIDTH << std::endl;
     return cod.str();
 }
 
