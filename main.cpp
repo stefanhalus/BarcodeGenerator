@@ -28,7 +28,7 @@ void createSampleHtmlPage(const std::vector<std::string> &svgVector)
     cod.open(SAMPLE_HTML_FILENAME, std::ios::out);
     cod << "<!DOCTYPE html>" << std::endl;
     cod << "<html><head><meta charset=\"UTF-8\"></head>" << std::endl;
-    cod << "<body><center>" << std::endl;
+    cod << "<body bgcolor=\"grey\"><center>" << std::endl;
 
     for (auto svg : svgVector)
         cod << "\n<p>" << svg;

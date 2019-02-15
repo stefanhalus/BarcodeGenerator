@@ -289,6 +289,7 @@ std::string createSvg(const std::string &productName,
 
     std::ostringstream cod;
     cod << "<svg height=\"" << SVG_HEIGHT << "\" width=\"" << SVG_WIDTH << "\">" << std::endl;
+    cod << "<rect height=\"100%\" width=\"100%\" fill=\"white\" />" << std::endl;
 
     if (!productName.empty())
         cod << "<text x=\"104\" y=\"16\" letter-spacing=\"2\" text-anchor=\"middle\">"
