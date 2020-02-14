@@ -20,14 +20,14 @@
 #include <iostream>
 #include <cstring>
 
-void barsInitialize(int b[]);
-std::string numberFullFill(const char[], const char[]);
-int numberControlDigit(std::string);
-void G(int, int[], int);
-void L(int, int[], int);
-void R(int, int[], int);
+namespace EAN13
+{
+    std::string appendChecksum(const char[], const char[]);
+    int calculateChecksum(const std::string);
 
-std::string createSvg(const std::string, int[]);
+    std::string createSvg(const std::string &,
+                          const std::string &);
+}
 
 #endif
 /* FUNCTII_H_ */

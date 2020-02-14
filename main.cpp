@@ -13,52 +13,72 @@
  * @version: 1.0
  */
 
+#include <string>
 #include <fstream>
+#include <vector>
 
 #include "functii.h"
 
-int b[95];
-std::string productName("unnamed");
-std::string productCode;
+#define SAMPLE_HTML_FILENAME  "sample.html"
 
-void createSampleHtmlPage(const std::string &svg)
+void createSampleHtmlPage(const std::vector<std::string> &svgVector)
 {
     std::fstream cod;
     
-    cod.open("cod.html", std::ios::out);
+    cod.open(SAMPLE_HTML_FILENAME, std::ios::out);
     cod << "<!DOCTYPE html>" << std::endl;
-    cod << "<html><body><center>" << std::endl;
-    
-    cod << svg;
+    cod << "<html><head><meta charset=\"UTF-8\"></head>" << std::endl;
+    cod << "<body bgcolor=\"grey\"><center>" << std::endl;
+
+    for (auto svg : svgVector)
+        cod << "\n<p>" << svg;
     
     cod << "</center></body></html>" << std::endl;
     cod.close();
-    
-    std::cout << std::endl << std::endl
-    << productName << ", cod " << productCode
-    << " was generated and saved." << std::endl;
 }
 
 int main(int argc, char ** argv)
 {
-	barsInitialize(b);
+    std::vector<std::string> svgVector;
 
-    std::cout << "Enter product name: ";
-    getline(std::cin, productName);
+    while (1) {
+        std::cout << std::endl << "Enter product name (empty to terminate list): ";
+        std::string productName;
+        getline(std::cin, productName);
+        
+        if (productName.empty()) {
+            std::cout << "line " << __LINE__ << std::endl;
+            break;
+        }
 
-    std::cout << "Country code (3 digits): ";
-    char countryCode[4];
-    std::cin >> countryCode;
+        if (productName == ";") // use ';' to have a barcode without label
+            productName.clear();
 
-    std::cout << "Code EAN (9 digits, no spaces): ";
-    char codDat[10];
-    std::cin >> codDat;
+        std::cout << "Enter country code (3 digits): ";
+        std::string code3;
+        std::cin >> code3;
+        if (code3.size() != 3)
+            return EXIT_FAILURE;
 
-    std::string codFinal = numberFullFill(countryCode, codDat);
-    productCode = codFinal;
-    
-    std::string svg = createSvg(codFinal, b);
-    createSampleHtmlPage(svg);
+        std::cout << "Enter EAN code (9 digits, no spaces): ";
+        std::string code9;
+        std::cin >> code9;
+        if (code9.size() != 9)
+            return EXIT_FAILURE;
+
+        std::cin.clear();
+        std::cin.ignore(100, '\n');
+
+        std::string code13 = EAN13::appendChecksum(code3.c_str(), code9.c_str());
+        
+        std::string svg = EAN13::createSvg(productName, code13);
+        svgVector.push_back(svg);
+    }
+
+    if (svgVector.size() > 0) {
+        createSampleHtmlPage(svgVector);
+        std::cout << " Sample file generated: " << SAMPLE_HTML_FILENAME << std::endl;
+    }
 
 	return EXIT_SUCCESS;
 }
